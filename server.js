@@ -1,14 +1,54 @@
-const experss = require('express');
-const cors = require('cors')
-const app = experss()
-app.use(cors())
-app.get("/test", (req, res) => {
-    res.json({
-        message: "jwk bh",
-        status: 200
+const express = require('express');
+const app = express();
+const { PrismaClient } = require('./prisma/generated/prisma');
+const prisma = new PrismaClient();
+const cors = require('cors');
+app.use(cors());
+app.use(express.json());
+
+app.post("/addtask", async (request, response) => {
+    const task = request.body;
+    console.log(`task: ${task.title}`)
+    const newtask = await prisma.Task.create({
+        data: {
+            title: task.title
+        }
+    })
+    response.json(newtask)
+});
+app.delete("/deletetask:id", async (request, response) => {
+    const taskID = request.params.id
+    await prisma.Task.delete({
+        where: {
+            id: taskID
+        }
+    })
+    console.log(`task ${taskID} deleted successfully!`)
+    response.json({
+        message: "task deleted ",
+        Comment: "successfully",
+        test: "test"
     })
 })
-
-app.listen(5000, () => {
-    console.log("server is live...")
+app.put("/updatetask:id", async (request, response) => {
+    const taskID = request.params.id
+    const task = await prisma.Task.findUnique({ where: { id: taskID } });
+    await prisma.task.update({
+        where: {
+            id: taskID
+        },
+        data: {
+            done: !task.done
+        }
+    })
+    console.log(`task ${task.done} updated successfully!`)
 })
+app.get("/tasks", async (request, response) => {
+    const tasks = await prisma.Task.findMany();
+
+    response.json(tasks)
+})
+const PORT = 5500;
+app.listen(PORT, () => {
+    console.log("server is running on port", PORT);
+});
