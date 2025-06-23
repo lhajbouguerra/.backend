@@ -1,6 +1,6 @@
 const experss = require('express');
 const app = experss()
-app.post("/test", (req, res) => {
+app.get("/test", (req, res) => {
     res.json({
         message:"jwk bh"
     })
